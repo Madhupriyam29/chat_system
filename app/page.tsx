@@ -1,6 +1,7 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { Weather } from '@/components/weather';
 
 // Simple Spinner component
 const Spinner = () => (
@@ -167,6 +168,28 @@ export default function Page() {
                         }
                         
                         return null;
+                      })}
+                      {message.toolInvocations?.map(toolInvocation => {
+                        const { toolName, toolCallId, state } = toolInvocation;
+
+                        if (state === 'result') {
+                          if (toolName === 'displayWeather') {
+                            const { result } = toolInvocation;
+                            return (
+                              <div key={toolCallId}>
+                                <Weather {...result} />
+                              </div>
+                            );
+                          }
+                        } else {
+                          return (
+                            <div key={toolCallId}>
+                              {toolName === 'displayWeather' ? (
+                                <div>Loading weather...</div>
+                              ) : null}
+                            </div>
+                          );
+                        }
                       })}
                     </div>
                   )}

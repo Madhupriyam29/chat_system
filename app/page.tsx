@@ -3,34 +3,14 @@
 import { useChat } from '@ai-sdk/react';
 import { Weather } from '@/components/weather';
 
-// Simple Spinner component
-const Spinner = () => (
-  <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" 
-       role="status">
-    <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-      Loading...
-    </span>
-  </div>
-);
-
 
 
 export default function Page() {
-  const { messages, input, handleInputChange, handleSubmit, status, stop, addToolResult } = useChat({
-    maxSteps: 5,
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    maxSteps: 10 // You can adjust this number based on your needs
     // run client-side tools that are automatically executed:
-    async onToolCall({ toolCall }) {
-      if (toolCall.toolName === 'getLocation') {
-        const cities = [
-          'New York',
-          'Los Angeles',
-          'Chicago',
-          'San Francisco',
-        ];
-        return cities[Math.floor(Math.random() * cities.length)];
-      }
-    },
   });
+  
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b border-gray-200">
@@ -79,146 +59,35 @@ export default function Page() {
                   <div className="font-semibold mb-1">
                     {message.role === 'user' ? 'You' : 'AI Assistant'}
                   </div>
-                  {message.content ? (
-                    <div className="whitespace-pre-wrap">{message.content}</div>
-                  ) : (
-                    <div>
-                      {message.parts?.map((part, index) => {
-                        if (part.type === 'text') {
-                          return <div key={index} className="whitespace-pre-wrap">{part.text}</div>;
-                        }
-                        
-                        if (part.type === 'tool-invocation') {
-                          switch (part.toolInvocation.state) {
-                            case 'partial-call':
-                              return (
-                                <div key={index} className="mt-2 p-2 bg-yellow-50 rounded-md">
-                                  <p className="text-yellow-700">
-                                    <span className="font-medium">Tool: </span>
-                                    {part.toolInvocation.toolName} (processing...)
-                                  </p>
-                                  <pre className="text-xs mt-1 text-gray-500 overflow-x-auto">
-                                    {JSON.stringify(part.toolInvocation.args, null, 2)}
-                                  </pre>
-                                </div>
-                              );
-                            case 'call':
-                              return (
-                                <div key={index} className="mt-2 p-2 bg-blue-50 rounded-md">
-                                  <p className="text-blue-700">
-                                    <span className="font-medium">Tool: </span>
-                                    {part.toolInvocation.toolName}
-                                  </p>
-                                  {part.toolInvocation.toolName === 'askForConfirmation' && (
-                                    <div className="mt-2">
-                                      <p className="mb-2">{part.toolInvocation.args.message}</p>
-                                      <div className="flex space-x-2">
-                                        <button
-                                          onClick={() =>
-                                            addToolResult({
-                                              toolCallId: part.toolInvocation.toolCallId,
-                                              result: 'Yes, confirmed.',
-                                            })
-                                          }
-                                          className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200"
-                                        >
-                                          Yes
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            addToolResult({
-                                              toolCallId: part.toolInvocation.toolCallId,
-                                              result: 'No, denied',
-                                            })
-                                          }
-                                          className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
-                                        >
-                                          No
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {part.toolInvocation.toolName !== 'askForConfirmation' && (
-                                    <pre className="text-xs mt-1 text-gray-500 overflow-x-auto">
-                                      {JSON.stringify(part.toolInvocation.args, null, 2)}
-                                    </pre>
-                                  )}
-                                </div>
-                              );
-                            case 'result':
-                              return (
-                                <div key={index} className="mt-2 p-2 bg-green-50 rounded-md">
-                                  <p className="text-green-700">
-                                    <span className="font-medium">Result from {part.toolInvocation.toolName}: </span>
-                                  </p>
-                                  <div className="mt-1">
-                                    {typeof part.toolInvocation.result === 'string' ? (
-                                      <p>{part.toolInvocation.result}</p>
-                                    ) : (
-                                      <pre className="text-xs text-gray-700 overflow-x-auto">
-                                        {JSON.stringify(part.toolInvocation.result, null, 2)}
-                                      </pre>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            default:
-                              return null;
-                          }
-                        }
-                        
-                        return null;
-                      })}
-                      {message.toolInvocations?.map(toolInvocation => {
-                        const { toolName, toolCallId, state } = toolInvocation;
+                  {message.content}
+                  {message.toolInvocations?.map(toolInvocation => {
+                    const { toolName, toolCallId, state } = toolInvocation;
 
-                        if (state === 'result') {
-                          if (toolName === 'displayWeather') {
-                            const { result } = toolInvocation;
-                            return (
-                              <div key={toolCallId}>
-                                <Weather {...result} />
-                              </div>
-                            );
-                          }
-                        } else {
-                          return (
-                            <div key={toolCallId}>
-                              {toolName === 'displayWeather' ? (
-                                <div>Loading weather...</div>
-                              ) : null}
-                            </div>
-                          );
-                        }
-                      })}
-                    </div>
-                  )}
+                    if (state === 'result') {
+                      if (toolName === 'displayWeather') {
+                        const { result } = toolInvocation;
+                        return (
+                          <div key={toolCallId}>
+                            <Weather {...result} />
+                          </div>
+                        );
+                      }
+                    } else {
+                      return (
+                        <div key={toolCallId}>
+                          {toolName === 'displayWeather' ? (
+                            <div>Loading weather...</div>
+                          ) : null}
+                        </div>
+                      );
+                    }
+                  })}
                 </div>
               ))}
-              {(status === 'submitted' || status === 'streaming') && (
-                <div className="p-3 bg-gray-50 rounded-lg flex items-center">
-                  {status === 'submitted' && (
-                    <div className="flex items-center space-x-2">
-                      <Spinner />
-                      <span className="text-gray-600">AI is preparing a response...</span>
-                    </div>
-                  )}
-                  {status === 'streaming' && (
-                    <div className="text-gray-600">AI is responding...</div>
-                  )}
-                  <button 
-                    type="button" 
-                    onClick={() => stop()}
-                    className="ml-auto px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm font-medium transition-colors"
-                  >
-                    Stop Response
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
-
+        
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input 
             name="prompt" 

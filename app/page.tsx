@@ -203,7 +203,7 @@ export default function Page() {
             onChange={handleInputChange}
             disabled={false}
             placeholder="Type your message here..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800" 
           />
           <button 
             type="submit" 

@@ -9,6 +9,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = streamText({
+    toolCallStreaming: true,
     model: openai('gpt-4o'),
     messages,
     tools: {
@@ -23,6 +24,26 @@ export async function POST(req: Request) {
           ];
         },
       },
+      
+      // New Supreme Court Information tool
+      getSupremeCourtInformation: {
+        description: 'get information about a supreme court case',
+        parameters: z.object({ case: z.string() }),
+        execute: async ({}: { case: string }) => {
+          const caseInformation = [
+            'The Supreme Court ruled in favor of the plaintiff.',
+            'The Supreme Court ruled in favor of the defendant.',
+            'The Supreme Court remanded the case back to the lower court.',
+            'The Supreme Court dismissed the case.',
+            'The Supreme Court issued a split decision.',
+            'The case is still pending before the Supreme Court.'
+          ];
+          return caseInformation[
+            Math.floor(Math.random() * caseInformation.length)
+          ];
+        },
+      },
+      
       // client-side tool that starts user interaction:
       askForConfirmation: {
         description: 'Ask the user for confirmation.',
@@ -30,6 +51,8 @@ export async function POST(req: Request) {
           message: z.string().describe('The message to ask for confirmation.'),
         }),
       },
+
+      
       // client-side tool that is automatically executed on the client:
       getLocation: {
         description:
